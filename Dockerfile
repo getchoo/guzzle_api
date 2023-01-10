@@ -1,6 +1,7 @@
 FROM python:3.11
 
 WORKDIR /code
+ARG FLIT_ROOT_INSTALL=1
 
 RUN pip install flit
 COPY . /code/

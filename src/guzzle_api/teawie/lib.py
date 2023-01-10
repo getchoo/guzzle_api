@@ -15,6 +15,8 @@ def list_teawies(limit: int) -> list[Path]:
 	for i, file in enumerate(files.iterdir()):
 		if i >= limit:
 			break
+		if file.name == "__init__.py":
+			continue
 		res.append(file)
 
 	return res

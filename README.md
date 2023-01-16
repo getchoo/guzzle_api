@@ -16,5 +16,5 @@ URL = "https://<yourdomainhere>
 and to start running a docker (or podman) container:
 ```bash
 docker build -t guzzle_api .
-docker run -d --name api 7070:<your_desired_port> guzzle_api
+docker run -d --name api <your_desired_port>:80 guzzle_api
 ```

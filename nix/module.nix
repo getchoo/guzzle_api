@@ -10,25 +10,24 @@ in {
   options.services.guzzle-api = {
     enable = mkEnableOption "enable guzzle-api";
     url = mkOption {
-      type = types.string;
+      type = types.str;
       default = "";
       description = "url string for guzzle-api";
     };
     port = mkOption {
-      type = types.int;
-      default = 8080;
+      type = types.str;
+      default = "8080";
       description = "port for guzzle-api";
     };
   };
 
-  config.systemd.services.guzzle-api = mkIf cfg.enable {
+  config.systemd.services = mkIf cfg.enable {
     guzzle-api = {
       enable = mkDefault true;
-      ports = mkDefault ["8080:80"];
       wantedBy = ["multi-user.target"];
       after = ["network.target"];
       script = ''
-        URL=${cfg.url} ${pkgs.guzzle-api-server} --host 0.0.0.0 --port "${cfg.port}"
+        URL=${cfg.url} ${pkgs.guzzle-api-server}/bin/guzzle-api-server --host 0.0.0.0 --port "${cfg.port}"
       '';
       serviceConfig = mkDefault {
         Restart = "always";

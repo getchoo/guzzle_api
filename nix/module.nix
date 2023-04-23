@@ -19,6 +19,11 @@ in {
       default = "8080";
       description = "port for guzzle-api";
     };
+    package = mkOption {
+      type = types.package;
+      default = pkgs.guzzle-api-server;
+      description = "package for guzzle-api wrapper";
+    };
   };
 
   config.systemd.services = mkIf cfg.enable {
@@ -27,7 +32,7 @@ in {
       wantedBy = ["multi-user.target"];
       after = ["network.target"];
       script = ''
-        URL=${cfg.url} ${pkgs.guzzle-api-server}/bin/guzzle-api-server --host 0.0.0.0 --port "${cfg.port}"
+        URL=${cfg.url} ${cfg.package}/bin/guzzle-api-server --host 0.0.0.0 --port "${cfg.port}"
       '';
       serviceConfig = mkDefault {
         Restart = "always";

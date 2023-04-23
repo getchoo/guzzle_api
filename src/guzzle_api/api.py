@@ -1,10 +1,10 @@
+import os
+
 from fastapi import FastAPI, Query
 from fastapi.staticfiles import StaticFiles
 
 from guzzle_api import lib
 from guzzle_api.teawie import lib as teawie
-
-import os
 
 URL = os.getenv("URL")
 TEAWIE_STATIC_ENDPOINT = "/static/teawie"

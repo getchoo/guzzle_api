@@ -1,11 +1,19 @@
 {
   description = "silly little api";
 
-  inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "nixpkgs/nixos-unstable";
+    pre-commit-hooks = {
+      url = "github:cachix/pre-commit-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "nixpkgs";
+    };
+  };
 
   outputs = {
     self,
     nixpkgs,
+    pre-commit-hooks,
   }: let
     version = self.lastModifiedDate;
 
@@ -30,11 +38,30 @@
       guzzle-api-server = callPackage ./nix/server.nix {};
     };
   in {
+    checks = forAllSystems (system: let
+      pkgs = nixpkgsFor.${system};
+    in {
+      pre-commit-check = pre-commit-hooks.lib.${system}.run {
+        src = ./.;
+        hooks = {
+          isort.enable = true;
+          pylint.enable = true;
+          yapf = {
+            enable = true;
+            name = "yapf";
+            entry = "${pkgs.python311Packages.yapf}/bin/yapf -i";
+            types = ["file" "python"];
+          };
+        };
+      };
+    });
+
     devShells = forAllSystems (system: let
       pkgs = nixpkgsFor.${system};
       inherit (pkgs) mkShell;
     in {
       default = mkShell {
+        inherit (self.checks.${system}.pre-commit-check) shellHook;
         packages = with pkgs.python311Packages; [
           python
           fastapi

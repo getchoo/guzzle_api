@@ -4,7 +4,9 @@ from fastapi.staticfiles import StaticFiles
 from guzzle_api import lib
 from guzzle_api.teawie import lib as teawie
 
-URL = "http://198.199.68.30/api/api"
+import os
+
+URL = os.getenv("URL")
 TEAWIE_STATIC_ENDPOINT = "/static/teawie"
 
 app = FastAPI()

@@ -1,0 +1,26 @@
+name: update flake lock
+
+on:
+  schedule: 
+    - cron: "0 0 * * 6"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    permissions:
+     contents: write
+     pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      
+      - name: update lockfile
+        uses: DeterminateSystems/update-flake-lock@v20
+        id: update
+        with:
+          commit-msg: "flake: update inputs"
+          pr-title: "flake: update inputs"
+          token: ${{ github.token }}

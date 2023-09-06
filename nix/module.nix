@@ -1,43 +1,125 @@
-{
+self: {
   config,
   lib,
+  modulesPath,
   pkgs,
   ...
 }: let
   cfg = config.services.guzzle-api;
-  inherit (lib) mkDefault mkEnableOption mkOption mkIf types;
-in {
-  options.services.guzzle-api = {
-    enable = mkEnableOption "enable guzzle-api";
-    url = mkOption {
-      type = types.str;
-      default = "";
-      description = "url string for guzzle-api";
-    };
-    port = mkOption {
-      type = types.str;
-      default = "8080";
-      description = "port for guzzle-api";
-    };
-    package = mkOption {
-      type = types.package;
-      default = pkgs.guzzle-api-server;
-      description = "package for guzzle-api wrapper";
+  inherit
+    (lib)
+    literalExpression
+    mkDefault
+    mkDoc
+    mkEnableOption
+    mkIf
+    mkMerge
+    mkOption
+    mkPackageOption
+    types
+    ;
+
+  proto = "http${lib.optionalString cfg.nginx.addSSL "s"}";
+
+  hostPortSubmodule = {
+    options = {
+      host = mkOption {
+        description = mkDoc "the hostname";
+        type = types.str;
+      };
+
+      port = mkOption {
+        description = mkDoc "the port";
+        type = types.port;
+      };
     };
   };
+in {
+  options.services.guzzle-api = {
+    enable = mkEnableOption "guzzle-api";
 
-  config.systemd.services = mkIf cfg.enable {
-    guzzle-api = {
+    listen = mkOption {
+      description = mkDoc "address and port to listen to";
+      type = types.submodule hostPortSubmodule;
+      default = {
+        host = "localhost";
+        port = 7240;
+      };
+      defaultText = literalExpression ''
+        {
+          address = "localhost";
+          port = 7240;
+        }
+      '';
+    };
+
+    domain = mkOption {
+      description = mkDoc "FQDN for guzzle_api endpoint";
+      type = types.str;
+    };
+
+    nginx = mkOption {
+      description = mkDoc ''
+        With this option, you can customize an nginx virtual host which already has sensible defaults for Dolibarr.
+        Set to {} if you do not need any customization to the virtual host.
+        If enabled, then by default, the {option}`serverName` is
+        `''${domain}`,
+        If this is set to null (the default), no nginx virtualHost will be configured.
+      '';
+
+      type = types.nullOr (types.submodule (
+        import (modulesPath + "/services/web-servers/nginx/vhost-options.nix") {inherit config lib;}
+      ));
+
+      default = null;
+      example = literalExpression ''
+        {
+          enableACME = true;
+        	forceSSL = true;
+        }
+      '';
+    };
+
+    package = mkPackageOption self.packages.${pkgs.stdenv.hostPlatform.system} "guzzle-api-server" {};
+  };
+
+  config = mkIf cfg.enable {
+    systemd.services.guzzle-api = {
       enable = mkDefault true;
       wantedBy = ["multi-user.target"];
       after = ["network.target"];
       script = ''
-        URL=${cfg.url} ${cfg.package}/bin/guzzle-api-server --host 0.0.0.0 --port "${cfg.port}"
+        URL="${proto}://${cfg.domain}" ${cfg.package}/bin/guzzle-api-server --host ${cfg.listen.host} --port ${toString cfg.listen.port}
       '';
       serviceConfig = mkDefault {
-        Restart = "always";
         Type = "simple";
+        Restart = "always";
+
+        # hardening
+        DynamicUser = true;
+        PrivateTmp = true;
+        NoNewPrivileges = true;
+        RestrictNamespaces = "uts ipc pid user cgroup";
+        ProtectSystem = "strict";
+        ProtectHome = true;
+        ProtectKernelTunables = true;
+        ProtectKernelModules = true;
+        ProtectControlGroups = true;
+        PrivateDevices = true;
+        RestrictSUIDSGID = true;
       };
+    };
+
+    services.nginx = mkIf (cfg.nginx != null) {
+      enable = true;
+      virtualHosts."${cfg.domain}" = mkMerge [
+        {
+          locations."/" = {
+            proxyPass = "http://${cfg.listen.host}:${toString cfg.listen.port}";
+          };
+        }
+        cfg.nginx
+      ];
     };
   };
 }

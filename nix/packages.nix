@@ -2,11 +2,15 @@
   version = builtins.substring 0 8 self.lastModifiedDate or "dirty";
   commonArgs = {inherit self version;};
 in {
-  perSystem = {pkgs, ...}: {
-    packages = rec {
+  perSystem = {
+    pkgs,
+    self',
+    ...
+  }: {
+    packages = {
       guzzle-api = pkgs.python311Packages.callPackage ./derivation.nix commonArgs;
-      guzzle-api-server = pkgs.python311Packages.callPackage ./server.nix {inherit guzzle-api;};
-      default = guzzle-api;
+      guzzle-api-server = pkgs.python311Packages.callPackage ./server.nix {inherit (self'.packages) guzzle-api;};
+      default = self'.packages.guzzle-api;
     };
   };
 

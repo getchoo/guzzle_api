@@ -21,6 +21,6 @@ jobs:
         uses: DeterminateSystems/update-flake-lock@v20
         id: update
         with:
-          commit-msg: "flake: update inputs"
-          pr-title: "flake: update inputs"
+          commit-msg: "deps(flake): update inputs"
+          pr-title: "deps(flake): update inputs"
           token: ${{ github.token }}

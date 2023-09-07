@@ -10,7 +10,7 @@ self: {
     (lib)
     literalExpression
     mkDefault
-    mkDoc
+    mdDoc
     mkEnableOption
     mkIf
     mkMerge
@@ -24,12 +24,12 @@ self: {
   hostPortSubmodule = {
     options = {
       host = mkOption {
-        description = mkDoc "the hostname";
+        description = mdDoc "the hostname";
         type = types.str;
       };
 
       port = mkOption {
-        description = mkDoc "the port";
+        description = mdDoc "the port";
         type = types.port;
       };
     };
@@ -39,7 +39,7 @@ in {
     enable = mkEnableOption "guzzle-api";
 
     listen = mkOption {
-      description = mkDoc "address and port to listen to";
+      description = mdDoc "address and port to listen to";
       type = types.submodule hostPortSubmodule;
       default = {
         host = "localhost";
@@ -54,12 +54,12 @@ in {
     };
 
     domain = mkOption {
-      description = mkDoc "FQDN for guzzle_api endpoint";
+      description = mdDoc "FQDN for guzzle_api endpoint";
       type = types.str;
     };
 
     nginx = mkOption {
-      description = mkDoc ''
+      description = mdDoc ''
         With this option, you can customize an nginx virtual host which already has sensible defaults for Dolibarr.
         Set to {} if you do not need any customization to the virtual host.
         If enabled, then by default, the {option}`serverName` is

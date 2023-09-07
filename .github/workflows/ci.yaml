@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update:
+  run-vm:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

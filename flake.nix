@@ -34,7 +34,7 @@
         "aarch64-darwin"
       ];
 
-      perSystem = p: {formatter = p.pkgs.alejandra;};
+      perSystem = {pkgs, ...}: {formatter = pkgs.alejandra;};
 
       flake.nixosModules.default = import ./nix/module.nix self;
     };

@@ -60,7 +60,7 @@ in {
 
     nginx = mkOption {
       description = mdDoc ''
-        With this option, you can customize an nginx virtual host which already has sensible defaults for Dolibarr.
+        With this option, you can customize an nginx virtual host which already has sensible defaults for guzzle_api.
         Set to {} if you do not need any customization to the virtual host.
         If enabled, then by default, the {option}`serverName` is
         `''${domain}`,
@@ -75,7 +75,7 @@ in {
       example = literalExpression ''
         {
           enableACME = true;
-        	forceSSL = true;
+          forceSSL = true;
         }
       '';
     };
@@ -88,9 +88,11 @@ in {
       enable = mkDefault true;
       wantedBy = ["multi-user.target"];
       after = ["network.target"];
+
       script = ''
         URL="${proto}://${cfg.domain}" ${cfg.package}/bin/guzzle-api-server --host ${cfg.listen.host} --port ${toString cfg.listen.port}
       '';
+
       serviceConfig = mkDefault {
         Type = "simple";
         Restart = "always";

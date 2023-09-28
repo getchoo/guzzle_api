@@ -6,16 +6,26 @@
   pydantic,
   uvicorn,
   self,
-  version,
+  build,
+  wheel,
 }:
 buildPythonPackage {
   pname = "guzzle-api";
-  inherit version;
+  version = builtins.substring 0 8 self.lastModifiedDate or "dirty";
 
   src = lib.cleanSource self;
   format = "flit";
   doCheck = false;
 
+  dontUsePypaBuild = true;
+
+  # TODO: find out what's going on with pypaBuildHook
+  buildPhase = ''
+    runHook preBuild
+    pyproject-build --no-isolation --outdir dist/ --wheel $pypaBuildFlags
+    runHook postBuild
+  '';
+
   propagatedBuildInputs = [fastapi pydantic uvicorn];
-  propagatedNativeBuildInputs = [flit-core];
+  nativeBuildInputs = [flit-core build wheel];
 }

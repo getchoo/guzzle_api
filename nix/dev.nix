@@ -5,8 +5,9 @@
   ...
 }: {
   perSystem = {
-    config,
     pkgs,
+    config,
+    self',
     ...
   }: {
     pre-commit = {
@@ -24,8 +25,11 @@
 
     devShells.default = pkgs.mkShell {
       shellHook = config.pre-commit.installationScript;
-      packages = [
-        (pkgs.python311.withPackages (p: with p; [isort yapf pylint]))
+      inputsFrom = [self'.packages.guzzle-api];
+      packages = with pkgs.python311Packages; [
+        isort
+        yapf
+        pylint
       ];
     };
   };
